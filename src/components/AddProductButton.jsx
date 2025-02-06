@@ -1,11 +1,13 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import useAuthStore from '../store/authStore';
 
 const AddProductButton = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuthStore();
 
-  if (location.pathname === '/products/add' || location.pathname.includes('/products/')) {
+  if (!user || location.pathname === '/products/add' || location.pathname.includes('/products/') || location.pathname === '/login') {
     return null;
   }
 
