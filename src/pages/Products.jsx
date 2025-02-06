@@ -1,55 +1,82 @@
 import { useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import useProductStore from '../store/productStore';
+import useAuthStore from '../store/authStore';
 import ProductCard from '../components/ProductCard';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { Navigate } from 'react-router-dom';
 
 const Products = () => {
-  const { products, loading, error, fetchProducts } = useProductStore();
+  const { user, loading: authLoading } = useAuthStore();
+  const { products, loading: productsLoading, error, fetchProducts } = useProductStore();
 
   useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
+    const loadProducts = async () => {
+      if (authLoading) {
+        console.log('Esperando autenticación...');
+        return;
+      }
 
-  if (loading) return <LoadingSpinner />;
-  if (error) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="alert alert-error">
-        <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <span>{error}</span>
-      </div>
-    </div>
-  );
+      if (!user) {
+        console.log('No hay usuario autenticado');
+        return;
+      }
+
+      console.log('Usuario autenticado, cargando productos...');
+      try {
+        await fetchProducts();
+      } catch (error) {
+        console.error('Error al cargar productos:', error);
+      }
+    };
+
+    loadProducts();
+  }, [user, authLoading, fetchProducts]);
+
+  // Mostrar loading mientras se verifica la autenticación
+  if (authLoading) {
+    return <div>Verificando autenticación...</div>;
+  }
+
+  // Redireccionar si no hay usuario
+  if (!user) {
+    return <Navigate to="/login" />;
+  }
+
+  if (productsLoading) {
+    return <div>Cargando productos...</div>;
+  }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-800">Productos</h1>
-          <p className="text-gray-600 mt-2">
-            {products.length} productos encontrados
-          </p>
-        </div>
-      </div>
-
-      {products.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="text-gray-500 text-lg">
-            No hay productos disponibles
-          </div>
-          <Link to="/products/add" className="btn btn-primary mt-4">
-            Añadir el primer producto
-          </Link>
-        </div>
-      ) : (
-        <div className="product-grid">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Productos</h1>
+      
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <p>{error}</p>
+          <button 
+            onClick={() => fetchProducts()} 
+            className="mt-2 bg-red-500 text-white px-4 py-2 rounded"
+          >
+            Reintentar
+          </button>
         </div>
       )}
+
+      <button
+        onClick={() => fetchProducts()}
+        className="bg-blue-500 text-white px-4 py-2 rounded mb-4"
+      >
+        Recargar Productos
+      </button>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {products.map((product) => (
+          <ProductCard 
+            key={product._id}
+            product={product}
+          />
+        ))}
+      </div>
     </div>
   );
 };

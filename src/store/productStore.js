@@ -7,12 +7,21 @@ const useProductStore = create((set) => ({
   error: null,
   
   fetchProducts: async () => {
-    set({ loading: true });
     try {
+      set({ loading: true, error: null });
       const products = await api.getAllProducts();
-      set({ products, loading: false, error: null });
+      set({ 
+        products, 
+        loading: false,
+        error: null
+      });
     } catch (error) {
-      set({ error: error.message, loading: false });
+      console.error('Error en fetchProducts:', error);
+      set({ 
+        loading: false, 
+        error: error.message || 'Error al obtener productos',
+        products: [] // Limpiar productos en caso de error
+      });
     }
   },
 
@@ -59,6 +68,8 @@ const useProductStore = create((set) => ({
       set({ error: error.message, loading: false });
     }
   },
+
+  clearProducts: () => set({ products: [], error: null }),
 }));
 
 export default useProductStore;

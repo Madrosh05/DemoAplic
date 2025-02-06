@@ -2,11 +2,22 @@ import { Link } from 'react-router-dom';
 import useProductStore from '../store/productStore';
 
 const ProductCard = ({ product }) => {
+  if (!product) return null;
+
+  const {
+    name,
+    description,
+    price,
+    category,
+    stock,
+    _id
+  } = product;
+
   const deleteProduct = useProductStore((state) => state.deleteProduct);
 
   const handleDelete = async () => {
     if (window.confirm('¿Estás seguro de que quieres eliminar este producto?')) {
-      await deleteProduct(product.id);
+      await deleteProduct(_id);
     }
   };
 
@@ -16,27 +27,28 @@ const ProductCard = ({ product }) => {
         <img src={product.image} alt={product.title} className="rounded-t-xl" />
       </div>
       <div className="card-body">
-        <div className="badge badge-secondary mb-2">{product.category}</div>
+        <div className="badge badge-secondary mb-2">{category}</div>
         <h2 className="card-title text-lg font-bold line-clamp-2 mb-2">
-          {product.title}
+          {name}
         </h2>
         <p className="text-sm text-gray-600 line-clamp-3 mb-4">
-          {product.description}
+          {description}
         </p>
         <div className="flex justify-between items-center mb-4">
           <span className="text-2xl font-bold text-primary">
-            ${product.price.toFixed(2)}
+            ${price.toFixed(2)}
           </span>
+          <span className="text-sm text-gray-500">Stock: {stock}</span>
         </div>
         <div className="card-actions justify-end gap-2">
           <Link 
-            to={`/products/${product.id}`} 
+            to={`/products/${_id}`} 
             className="btn btn-primary btn-sm flex-1"
           >
             Ver detalles
           </Link>
           <Link 
-            to={`/products/${product.id}/edit`} 
+            to={`/products/${_id}/edit`} 
             className="btn btn-ghost btn-sm"
           >
             Editar

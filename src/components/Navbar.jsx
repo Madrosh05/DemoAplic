@@ -12,7 +12,8 @@ const Navbar = () => {
       clearUser();
       navigate('/login');
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error('Error en logout:', error);
+      alert('Error al cerrar sesión');
     }
   };
 
