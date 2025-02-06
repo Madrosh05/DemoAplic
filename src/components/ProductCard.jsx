@@ -40,7 +40,10 @@ const ProductCard = ({ product }) => {
         </p>
         <div className="flex justify-between items-center mb-4">
           <span className="text-2xl font-bold text-primary">
-            ${price.toFixed(2)}
+          {price?.toLocaleString('es-CO', {
+              style: 'currency',
+              currency: 'COP'
+            })}
           </span>
           <span className="text-sm text-gray-500">Stock: {stock}</span>
         </div>

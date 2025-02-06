@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const ProductForm = ({ initialData = {}, onSubmit, buttonText = 'Guardar' }) => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     title: initialData.name || '',
     price: initialData.price || '',
@@ -134,7 +136,18 @@ const ProductForm = ({ initialData = {}, onSubmit, buttonText = 'Guardar' }) => 
         />
       </div>
 
-      <button type="submit" className="btn btn-primary w-full">{buttonText}</button>
+      <div className="flex gap-4">
+        <button type="submit" className="btn btn-primary flex-1">
+          {buttonText}
+        </button>
+        <button 
+          type="button" 
+          onClick={() => navigate('/products')} 
+          className="btn btn-ghost flex-1"
+        >
+          Cancelar
+        </button>
+      </div>
     </form>
   );
 };
