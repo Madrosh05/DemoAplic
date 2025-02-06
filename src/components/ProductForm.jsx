@@ -2,10 +2,10 @@ import { useState } from 'react';
 
 const ProductForm = ({ initialData = {}, onSubmit, buttonText = 'Guardar' }) => {
   const [formData, setFormData] = useState({
-    title: initialData.title || '',
+    title: initialData.name || '',
     price: initialData.price || '',
     description: initialData.description || '',
-    image: initialData.image || '',
+    image: initialData.images?.[0] || '',
     category: initialData.category || ''
   });
 
@@ -23,6 +23,36 @@ const ProductForm = ({ initialData = {}, onSubmit, buttonText = 'Guardar' }) => 
       ...prev,
       [name]: value
     }));
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        try {
+          const response = await fetch(`${import.meta.env.VITE_API_URL}/upload`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('firebase_token')}`
+            },
+            body: JSON.stringify({
+              imageBase64: reader.result
+            })
+          });
+          const data = await response.json();
+          setFormData(prev => ({
+            ...prev,
+            image: data.imageUrl
+          }));
+        } catch (error) {
+          console.error('Error uploading image:', error);
+          alert('Error al subir la imagen');
+        }
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   return (
@@ -73,16 +103,21 @@ const ProductForm = ({ initialData = {}, onSubmit, buttonText = 'Guardar' }) => 
 
       <div className="form-control">
         <label className="label">
-          <span className="label-text">URL de la imagen</span>
+          <span className="label-text">Imagen</span>
         </label>
         <input
-          type="url"
-          name="image"
-          value={formData.image}
-          onChange={handleChange}
-          className="input input-bordered"
-          required
+          type="file"
+          accept="image/*"
+          onChange={handleImageUpload}
+          className="file-input file-input-bordered w-full"
         />
+        {formData.image && (
+          <img 
+            src={formData.image} 
+            alt="Preview" 
+            className="mt-2 h-32 object-contain"
+          />
+        )}
       </div>
 
       <div className="form-control">

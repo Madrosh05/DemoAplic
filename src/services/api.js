@@ -83,7 +83,7 @@ export const api = {
       price: productData.price,
       description: productData.description,
       category: productData.category,
-      images: [productData.image]
+      images: productData.image ? [productData.image] : []
     });
     return response.data;
   },
@@ -94,7 +94,7 @@ export const api = {
       price: productData.price,
       description: productData.description,
       category: productData.category,
-      images: [productData.image]
+      images: productData.image ? [productData.image] : []
     });
     return response.data;
   },

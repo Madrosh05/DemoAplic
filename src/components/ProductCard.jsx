@@ -24,7 +24,11 @@ const ProductCard = ({ product }) => {
   return (
     <div className="card card-hover bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300">
       <div className="image-container">
-        <img src={product.image} alt={product.title} className="rounded-t-xl" />
+        <img 
+          src={product.images?.[0]}
+          alt={product.name}
+          className="rounded-t-xl"
+        />
       </div>
       <div className="card-body">
         <div className="badge badge-secondary mb-2">{category}</div>
