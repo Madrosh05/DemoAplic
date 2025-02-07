@@ -14,10 +14,11 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(async (config) => {
   try {
     const token = await getCurrentToken();
-    console.log('Token disponible:', !!token);
-    
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+      console.log('Token enviado en la petición');
+    } else {
+      console.warn('No hay token disponible');
     }
     return config;
   } catch (error) {
