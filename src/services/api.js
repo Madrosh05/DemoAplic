@@ -33,9 +33,15 @@ const processQueue = (error, token = null) => {
 axiosInstance.interceptors.request.use(async (config) => {
   try {
     const token = await getCurrentToken();
+    console.log('Token obtenido:', token ? 'Presente' : 'No presente');
+    
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+      console.log('Headers de la petición:', config.headers);
+    } else {
+      console.warn('No hay token disponible');
     }
+    
     return config;
   } catch (error) {
     console.error('Error al obtener el token:', error);
@@ -107,13 +113,21 @@ export const api = {
 
   uploadImage: async (imageBase64) => {
     try {
+      // Verificar token antes de la petición
+      const token = await getCurrentToken();
+      console.log('Token antes de upload:', token ? 'Presente' : 'No presente');
+      
       const response = await axiosInstance.post('/upload', { 
         imageBase64 
       });
       console.log('Respuesta de upload:', response.data);
       return response.data;
     } catch (error) {
-      console.error('Error al subir imagen:', error.response?.data || error.message);
+      console.error('Error detallado:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        headers: error.response?.headers
+      });
       throw error;
     }
   }
