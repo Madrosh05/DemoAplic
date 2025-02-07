@@ -29,24 +29,18 @@ const processQueue = (error, token = null) => {
   failedQueue = [];
 };
 
-// Interceptor para agregar el token
+// Interceptor para agregar el token a todas las peticiones
 axiosInstance.interceptors.request.use(async (config) => {
   try {
     const token = await getCurrentToken();
-    console.log('Token obtenido:', token ? 'Sí' : 'No'); // Debug log
-    
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-    } else {
-      console.warn('No se encontró token de autenticación');
     }
     return config;
   } catch (error) {
     console.error('Error al obtener el token:', error);
     return Promise.reject(error);
   }
-}, (error) => {
-  return Promise.reject(error);
 });
 
 // Interceptor para manejar errores
@@ -109,5 +103,18 @@ export const api = {
 
   deleteProduct: async (id) => {
     await axiosInstance.delete(`/products/${id}`);
+  },
+
+  uploadImage: async (imageBase64) => {
+    try {
+      const response = await axiosInstance.post('/upload', { 
+        imageBase64 
+      });
+      console.log('Respuesta de upload:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error al subir imagen:', error.response?.data || error.message);
+      throw error;
+    }
   }
 };
