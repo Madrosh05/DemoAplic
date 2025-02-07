@@ -19,17 +19,22 @@ googleProvider.setCustomParameters({
 
 // Función para obtener el token actual
 export const getCurrentToken = async () => {
-  const user = auth.currentUser;
-  if (user) {
-    try {
+  try {
+    const user = auth.currentUser;
+    console.log('Usuario actual:', user?.email); // Debug
+    
+    if (user) {
       const token = await user.getIdToken(true);
+      console.log('Token obtenido correctamente'); // Debug
       return token;
-    } catch (error) {
-      console.error('Error getting current token:', error);
+    } else {
+      console.warn('No hay usuario autenticado');
       return null;
     }
+  } catch (error) {
+    console.error('Error al obtener token:', error);
+    return null;
   }
-  return null;
 };
 
 export const signInWithGoogle = async () => {

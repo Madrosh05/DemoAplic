@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../services/api';
 
 const ProductForm = ({ initialData = {}, onSubmit, buttonText = 'Guardar' }) => {
   const navigate = useNavigate();
@@ -27,30 +28,31 @@ const ProductForm = ({ initialData = {}, onSubmit, buttonText = 'Guardar' }) => 
     }));
   };
 
-  const handleImageUpload = async (e) => {
+  const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
+      console.log('Archivo seleccionado:', file.name); // Debug
+
       const reader = new FileReader();
       reader.onloadend = async () => {
         try {
-          const response = await fetch(`${import.meta.env.VITE_API_URL}/upload`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('firebase_token')}`
-            },
-            body: JSON.stringify({
-              imageBase64: reader.result
-            })
-          });
-          const data = await response.json();
+          console.log('Iniciando carga de imagen...'); // Debug
+          const imageBase64 = reader.result;
+          const response = await api.uploadImage(imageBase64);
+          console.log('Respuesta de upload:', response); // Debug
+          
           setFormData(prev => ({
             ...prev,
-            image: data.imageUrl
+            image: response.imageUrl
           }));
         } catch (error) {
-          console.error('Error uploading image:', error);
-          alert('Error al subir la imagen');
+          console.error('Error detallado al subir imagen:', {
+            status: error.response?.status,
+            data: error.response?.data,
+            message: error.message
+          });
+          // Mostrar error al usuario
+          alert('Error al subir la imagen. Por favor, intenta de nuevo.');
         }
       };
       reader.readAsDataURL(file);
@@ -110,7 +112,7 @@ const ProductForm = ({ initialData = {}, onSubmit, buttonText = 'Guardar' }) => 
         <input
           type="file"
           accept="image/*"
-          onChange={handleImageUpload}
+          onChange={handleImageChange}
           className="file-input file-input-bordered w-full"
         />
         {formData.image && (
