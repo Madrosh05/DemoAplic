@@ -2,8 +2,10 @@ import axios from 'axios';
 import { getCurrentToken } from './firebase';
 
 const API_URL = import.meta.env.VITE_API_URL;
+console.log('API URL:', API_URL); // Para verificar que la URL es correcta
 
 const baseURL = API_URL.endsWith('/api') ? API_URL : `${API_URL}/api`;
+console.log('Base URL:', baseURL); // Para verificar la URL base final
 
 // Crea instancia de axios con configuración común
 const axiosInstance = axios.create({
@@ -49,16 +51,20 @@ axiosInstance.interceptors.request.use(async (config) => {
 
 // Interceptor para manejar errores
 axiosInstance.interceptors.response.use(
-  (response) => {
-    console.log('Respuesta exitosa:', response.status);
-    return response;
-  },
-  (error) => {
-    console.error('Error en la respuesta:', {
+  response => response,
+  error => {
+    console.error('Error en la petición:', {
       status: error.response?.status,
-      message: error.response?.data?.message,
-      headers: error.response?.headers
+      message: error.message,
+      url: error.config?.url
     });
+    
+    if (error.response?.status === 401) {
+      // Manejar error de autenticación
+      console.log('Error de autenticación, redirigiendo a login...');
+      window.location.href = '/login';
+    }
+    
     return Promise.reject(error);
   }
 );

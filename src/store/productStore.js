@@ -9,18 +9,20 @@ const useProductStore = create((set) => ({
   fetchProducts: async () => {
     try {
       set({ loading: true, error: null });
+      console.log('Intentando obtener productos...');
       const products = await api.getAllProducts();
-      set({ 
-        products, 
-        loading: false,
-        error: null
-      });
+      console.log('Productos obtenidos:', products);
+      set({ products, loading: false });
     } catch (error) {
-      console.error('Error en fetchProducts:', error);
+      console.error('Error detallado:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
       set({ 
         loading: false, 
         error: error.message || 'Error al obtener productos',
-        products: [] // Limpiar productos en caso de error
+        products: []
       });
     }
   },
