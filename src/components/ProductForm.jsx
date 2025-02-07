@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getCurrentToken } from '../firebase'; 
+import { getCurrentToken } from '../firebase'; // Asegúrate de importar el método correcto para obtener el token
 
 const ProductForm = ({ initialData = {}, onSubmit, buttonText = 'Guardar' }) => {
   const navigate = useNavigate();
@@ -35,7 +35,7 @@ const ProductForm = ({ initialData = {}, onSubmit, buttonText = 'Guardar' }) => 
       formData.append('file', file);
 
       try {
-        // Obtener el token de Firebase
+        // Obtener el token de Firebase (asegurándose de que sea válido)
         const token = await getCurrentToken(); 
 
         if (!token) {
@@ -59,11 +59,11 @@ const ProductForm = ({ initialData = {}, onSubmit, buttonText = 'Guardar' }) => 
 
         setFormData(prev => ({
           ...prev,
-          image: data.imageUrl // Asegúrate de que esto se actualice correctamente
+          image: data.imageUrl // Guardar la URL de la imagen en el estado
         }));
       } catch (error) {
-        console.error('Error al subir la imagen:', error);
-        alert('Error al subir la imagen: ' + error.message);
+        console.error('Error uploading image:', error);
+        alert(error.message);
       }
     }
   };
