@@ -33,17 +33,21 @@ const processQueue = (error, token = null) => {
 axiosInstance.interceptors.request.use(async (config) => {
   try {
     const token = await getCurrentToken();
-    console.log('Configurando petición:', {
+    
+    // Log detallado de la configuración
+    console.log('Configuración de la petición:', {
       url: config.url,
       method: config.method,
-      hasToken: !!token
+      hasToken: !!token,
+      headers: config.headers
     });
     
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    } else {
+    if (!token) {
       throw new Error('No hay token disponible');
     }
+    
+    // Asegurarse de que el token se envía correctamente
+    config.headers.Authorization = `Bearer ${token}`;
     
     return config;
   } catch (error) {
@@ -116,21 +120,30 @@ export const api = {
 
   uploadImage: async (imageBase64) => {
     try {
-      // Verificar autenticación antes de la petición
+      // Verificar token explícitamente
       const token = await getCurrentToken();
+      console.log('Token antes de upload:', !!token);
+
       if (!token) {
         throw new Error('Usuario no autenticado');
       }
 
+      // Hacer la petición con el token
       const response = await axiosInstance.post('/upload', { 
         imageBase64 
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       });
+      
       return response.data;
     } catch (error) {
-      console.error('Error al subir imagen:', {
+      console.error('Error en uploadImage:', {
         status: error.response?.status,
         data: error.response?.data,
-        message: error.message
+        message: error.message,
+        headers: error.config?.headers
       });
       throw error;
     }

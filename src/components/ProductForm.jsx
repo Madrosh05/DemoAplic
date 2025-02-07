@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { getCurrentToken } from '../services/firebase';
 
 const ProductForm = ({ initialData = {}, onSubmit, buttonText = 'Guardar' }) => {
   const navigate = useNavigate();
@@ -31,31 +32,48 @@ const ProductForm = ({ initialData = {}, onSubmit, buttonText = 'Guardar' }) => 
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      console.log('Archivo seleccionado:', file.name); // Debug
-
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        try {
-          console.log('Iniciando carga de imagen...'); // Debug
-          const imageBase64 = reader.result;
-          const response = await api.uploadImage(imageBase64);
-          console.log('Respuesta de upload:', response); // Debug
-          
-          setFormData(prev => ({
-            ...prev,
-            image: response.imageUrl
-          }));
-        } catch (error) {
-          console.error('Error detallado al subir imagen:', {
-            status: error.response?.status,
-            data: error.response?.data,
-            message: error.message
-          });
-          // Mostrar error al usuario
-          alert('Error al subir la imagen. Por favor, intenta de nuevo.');
+      try {
+        // Verificar token antes de proceder
+        const token = await getCurrentToken();
+        console.log('Token disponible:', token ? 'Sí' : 'No');
+        
+        if (!token) {
+          console.error('No hay token disponible');
+          alert('Error de autenticación. Por favor, inicia sesión nuevamente.');
+          return;
         }
-      };
-      reader.readAsDataURL(file);
+
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+          try {
+            console.log('Iniciando carga de imagen...');
+            const imageBase64 = reader.result;
+            
+            // Log de la petición
+            console.log('Haciendo petición a:', `${import.meta.env.VITE_API_URL}/upload`);
+            
+            const response = await api.uploadImage(imageBase64);
+            console.log('Respuesta de upload:', response);
+            
+            setFormData(prev => ({
+              ...prev,
+              image: response.imageUrl
+            }));
+          } catch (error) {
+            console.error('Error completo:', error);
+            console.error('Detalles del error:', {
+              status: error.response?.status,
+              data: error.response?.data,
+              headers: error.config?.headers
+            });
+            alert('Error al subir la imagen. Por favor, intenta de nuevo.');
+          }
+        };
+        reader.readAsDataURL(file);
+      } catch (error) {
+        console.error('Error en la preparación de la carga:', error);
+        alert('Error al preparar la carga de la imagen.');
+      }
     }
   };
 
