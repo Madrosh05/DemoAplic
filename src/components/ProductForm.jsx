@@ -33,46 +33,26 @@ const ProductForm = ({ initialData = {}, onSubmit, buttonText = 'Guardar' }) => 
     const file = e.target.files[0];
     if (file) {
       try {
-        // Verificar token antes de proceder
-        const token = await getCurrentToken();
-        console.log('Token disponible:', token ? 'Sí' : 'No');
-        
-        if (!token) {
-          console.error('No hay token disponible');
-          alert('Error de autenticación. Por favor, inicia sesión nuevamente.');
-          return;
-        }
-
         const reader = new FileReader();
         reader.onloadend = async () => {
           try {
             console.log('Iniciando carga de imagen...');
             const imageBase64 = reader.result;
-            
-            // Log de la petición
-            console.log('Haciendo petición a:', `${import.meta.env.VITE_API_URL}/upload`);
-            
             const response = await api.uploadImage(imageBase64);
-            console.log('Respuesta de upload:', response);
             
             setFormData(prev => ({
               ...prev,
               image: response.imageUrl
             }));
           } catch (error) {
-            console.error('Error completo:', error);
-            console.error('Detalles del error:', {
-              status: error.response?.status,
-              data: error.response?.data,
-              headers: error.config?.headers
-            });
+            console.error('Error al subir imagen:', error);
             alert('Error al subir la imagen. Por favor, intenta de nuevo.');
           }
         };
         reader.readAsDataURL(file);
       } catch (error) {
-        console.error('Error en la preparación de la carga:', error);
-        alert('Error al preparar la carga de la imagen.');
+        console.error('Error al procesar imagen:', error);
+        alert('Error al procesar la imagen.');
       }
     }
   };

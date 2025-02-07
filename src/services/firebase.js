@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
+import { auth } from '../services/firebase';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -21,20 +22,11 @@ googleProvider.setCustomParameters({
 export const getCurrentToken = async () => {
   try {
     const user = auth.currentUser;
-    console.log('Estado de autenticación:', {
-      isUserLoggedIn: !!user,
-      email: user?.email,
-      uid: user?.uid
-    });
-    
     if (!user) {
       console.warn('No hay usuario autenticado');
       return null;
     }
-
-    const token = await user.getIdToken(true);
-    console.log('Token obtenido:', token.substring(0, 20) + '...');
-    return token;
+    return await user.getIdToken(true);
   } catch (error) {
     console.error('Error al obtener token:', error);
     return null;
