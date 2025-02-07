@@ -34,7 +34,7 @@ export const getCurrentToken = async () => {
 
 export const signInWithGoogle = async () => {
   try {
-    // Configurar opciones específicas para el popup
+    // Configura opciones específicas para el popup
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({
       prompt: 'select_account',

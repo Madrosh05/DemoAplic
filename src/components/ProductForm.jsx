@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getCurrentToken } from '../firebase'; // Asegúrate de importar el método correcto para obtener el token
 
 const ProductForm = ({ initialData = {}, onSubmit, buttonText = 'Guardar' }) => {
   const navigate = useNavigate();
@@ -30,30 +31,40 @@ const ProductForm = ({ initialData = {}, onSubmit, buttonText = 'Guardar' }) => 
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        try {
-          const response = await fetch(`${import.meta.env.VITE_API_URL}/upload`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('firebase_token')}`
-            },
-            body: JSON.stringify({
-              imageBase64: reader.result
-            })
-          });
-          const data = await response.json();
-          setFormData(prev => ({
-            ...prev,
-            image: data.imageUrl
-          }));
-        } catch (error) {
-          console.error('Error uploading image:', error);
-          alert('Error al subir la imagen');
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        // Obtener el token de Firebase (asegurándose de que sea válido)
+        const token = await getCurrentToken(); 
+
+        if (!token) {
+          alert('No estás autenticado. Inicia sesión e intenta de nuevo.');
+          return;
         }
-      };
-      reader.readAsDataURL(file);
+
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/upload`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}` // Enviar el token de autenticación
+          },
+          body: formData // Usar FormData para subir la imagen
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || 'Error al subir la imagen');
+        }
+
+        setFormData(prev => ({
+          ...prev,
+          image: data.imageUrl // Guardar la URL de la imagen en el estado
+        }));
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        alert(error.message);
+      }
     }
   };
 

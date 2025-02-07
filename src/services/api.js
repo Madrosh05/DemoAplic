@@ -3,10 +3,9 @@ import { getCurrentToken } from './firebase';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-// Asegúrate de que la URL base termine en /api
 const baseURL = API_URL.endsWith('/api') ? API_URL : `${API_URL}/api`;
 
-// Crear instancia de axios con configuración común
+// Crea instancia de axios con configuración común
 const axiosInstance = axios.create({
   baseURL,
   headers: {

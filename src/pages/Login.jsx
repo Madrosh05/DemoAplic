@@ -22,12 +22,12 @@ const Login = () => {
         return;
       }
 
-      console.log('Login exitoso, guardando usuario...'); // Debug log
+      console.log('Login exitoso, guardando usuario...'); 
       setUser(userCredential);
       
-      // Verificar que el token esté disponible
+      // Verifica que el token esté disponible
       const token = await getCurrentToken();
-      console.log('Token disponible:', !!token); // Debug log
+      console.log('Token disponible:', !!token); 
 
       navigate('/products');
     } catch (error) {
