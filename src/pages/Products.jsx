@@ -1,13 +1,27 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import useProductStore from '../store/productStore';
 import useAuthStore from '../store/authStore';
 import ProductCard from '../components/ProductCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { Navigate } from 'react-router-dom';
+import AddProductButton from '../components/AddProductButton';
 
 const Products = () => {
   const { user, loading: authLoading } = useAuthStore();
   const { products, loading: productsLoading, error, fetchProducts } = useProductStore();
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Obtener categorías únicas de los productos
+  const categories = ['all', ...new Set(products.map(product => product.category))];
+
+  // Filtrar productos por categoría y término de búsqueda
+  const filteredProducts = products.filter(product => {
+    const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
+    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         product.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -47,36 +61,48 @@ const Products = () => {
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Productos</h1>
-      
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          <p>{error}</p>
-          <button 
-            onClick={() => fetchProducts()} 
-            className="mt-2 bg-red-500 text-white px-4 py-2 rounded"
+    <div className="container mx-auto px-4 py-8">
+      {/* Filtros */}
+      <div className="mb-8 flex flex-col md:flex-row gap-4 items-center justify-between">
+        <div className="flex flex-col md:flex-row gap-4 items-center">
+          {/* Búsqueda */}
+          <input
+            type="text"
+            placeholder="Buscar productos..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          
+          {/* Selector de categorías */}
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            Reintentar
-          </button>
+            {categories.map(category => (
+              <option key={category} value={category}>
+                {category === 'all' ? 'Todas las categorías' : category}
+              </option>
+            ))}
+          </select>
+        </div>
+        
+        <AddProductButton />
+      </div>
+
+      {/* Grid de productos */}
+      {filteredProducts.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {filteredProducts.map(product => (
+            <ProductCard key={product._id} product={product} />
+          ))}
+        </div>
+      ) : (
+        <div className="text-center text-gray-500">
+          No se encontraron productos que coincidan con los filtros seleccionados.
         </div>
       )}
-
-      <button
-        onClick={() => fetchProducts()}
-        className="bg-blue-500 text-white px-4 py-2 rounded mb-4"
-      >
-        Recargar Productos
-      </button>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {products.map((product) => (
-          <ProductCard 
-            key={product._id}
-            product={product}
-          />
-        ))}
-      </div>
     </div>
   );
 };
